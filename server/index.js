@@ -1,4 +1,3 @@
-
 // server/index.js
 require('dotenv').config();
 const express = require('express');
@@ -18,7 +17,10 @@ const PORT = process.env.PORT || 4000;
 // lowdb setup
 const file = path.join(__dirname, 'db.json');
 const adapter = new JSONFile(file);
-const db = new Low(adapter);
+
+// Provide default data as second argument to avoid lowdb error on some versions
+const defaultData = { restaurants: [] };
+const db = new Low(adapter, defaultData);
 
 // helper: filter local restaurants by distance (meters)
 function filterLocalByRadius(restaurants, lat, lng, radiusMeters) {
@@ -43,7 +45,8 @@ function filterLocalByRadius(restaurants, lat, lng, radiusMeters) {
 async function initDbAndStart() {
   try {
     await db.read();
-    db.data = db.data || { restaurants: [] };
+    // ensure data shape
+    db.data = db.data || defaultData;
     await db.write();
 
     // --------- Local Restaurants CRUD ------------
